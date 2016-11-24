@@ -80,7 +80,14 @@ public class TreeHelper {
                 }
                 leafValueToCompare = builder.toString().trim();
             }
-            if(leafValueToCompare.equals(StringUtils.stripNonAlphaNumerics(textToFind))){
+            String tempTextToFind = StringUtils.stripNonAlphaNumerics(textToFind);
+            if(tempTextToFind.length() > leafValueToCompare.length()){
+                //This is to handle Apostrophes inside coref tags if it gets split into different sentences
+                if(tempTextToFind.contains(leafValueToCompare)){
+                    foundIndex = i;
+                }
+            }
+            if(leafValueToCompare.equals(tempTextToFind)){
                 foundIndex = i;
                 break;
             }

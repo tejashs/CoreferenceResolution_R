@@ -32,7 +32,8 @@ public class CoreferenceResolution {
     private ArrayList<CoRefObject> failedCoRefs;
 
     public static void main(String[] args) {
-        String str = "/Users/tejas/Dropbox/MS Academics/Fall 2016/Natural Language Processing/Project/Initial Data set/dev/a9.crf";
+//        String str = "/Users/tejas/Dropbox/MS Academics/Fall 2016/Natural Language Processing/Project/Initial Data set/dev/a9.crf";
+        String str = "/Users/tejas/Dropbox/MS Academics/Fall 2016/Natural Language Processing/Project/Test Set 1/tst1/b11.crf";
         CoreferenceResolution res = new CoreferenceResolution();
         try {
             res.parseInputFile(str);
