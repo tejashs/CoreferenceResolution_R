@@ -13,6 +13,7 @@ public class POSUtility {
     private static ArrayList<String> nounRelatedTags;
     private static ArrayList<String> nounSingular;
     private static ArrayList<String> nounPlural;
+    private static ArrayList<String> articles;
     static{
         phrases = new ArrayList<String>();
         //CLAUSES as Per PENN TREEBANK
@@ -62,7 +63,10 @@ public class POSUtility {
         nounPlural.add("NNS");
         nounPlural.add("NNPS");
        
-        
+        articles = new ArrayList<String>();
+        articles.add("the");
+        articles.add("a");
+        articles.add("an");
     }
 
     public static boolean isTerminalTag(String tag){
@@ -104,5 +108,9 @@ public class POSUtility {
     		
     	}
     		return singular;
+    }
+
+    public static boolean isArticle(String key){
+        return (articles.contains(key.toLowerCase()));
     }
 }

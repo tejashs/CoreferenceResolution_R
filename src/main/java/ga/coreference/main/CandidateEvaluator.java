@@ -27,6 +27,8 @@ public class CandidateEvaluator {
 
     public String evaluateCandidateNPsForCoRefs() throws IOException{
         for (CoRefObject coRef: coRefObjects) {
+            String markedNodeText = TreeHelper.getInstance().getTextValueForTree(coRef.tree(), true);
+            System.out.println("Marked Node : "+ markedNodeText);
             ArrayList<CandidateNP> candidateNPs = coRef.getCandidates();
             for (CandidateNP candidate: candidateNPs) {
                 boolean featureMatched = FeatureMatcher.doesFeatureMatch(coRef.tree(), coRef.getSentenceTree(), candidate, candidate.getSentenceRoot());
@@ -34,6 +36,8 @@ public class CandidateEvaluator {
                     continue;
                 }
                 if(featureMatched){
+                    String candidateNodeText = TreeHelper.getInstance().getTextValueForTree(candidate.getNounPhrase(), true);
+                    System.out.println("Candidate : "+ candidateNodeText);
                     if(coRefObjectToSuccessCandidatesMap.containsKey(coRef)){
                         ArrayList<CandidateNP> successCandidates = coRefObjectToSuccessCandidatesMap.get(coRef);
                         successCandidates.add(candidate);
@@ -46,6 +50,7 @@ public class CandidateEvaluator {
                     }
                 }
             }
+            System.out.println("");
         }
        return getOutputToPrint();
        

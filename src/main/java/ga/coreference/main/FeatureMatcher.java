@@ -62,11 +62,74 @@ public class FeatureMatcher {
 	}
 	
 	private static boolean doesStringMatch(String markedNodeText, String candidateNodeText){
-    	if(markedNodeText.equalsIgnoreCase(candidateNodeText)) return true;
+	    //Working with 20% etc
+        String headNoun = getHeadNounFromString(markedNodeText);
+    	if(markedNodeText.equalsIgnoreCase(candidateNodeText)) {
+    	    return true;
+        }
     	else if(candidateNodeText.matches(markedNodeText) || StringUtils.find(markedNodeText, candidateNodeText)){
     		return true;
     	}
-    	return false;
+    	else if(candidateNodeText.matches(headNoun) || StringUtils.find(headNoun, candidateNodeText)){
+    	    return true;
+        }
+        return false;
+
+
+
+
+//        markedNodeText = markedNodeText.toLowerCase().trim();
+//        candidateNodeText.toLowerCase().trim();
+//
+//        if(POSUtility.isArticle(markedNodeText) || POSUtility.isArticle(candidateNodeText) || candidateNodeText.length() == 1){
+//            return false;
+//        }
+//        String[] markedNodeArray = markedNodeText.split("\\s");
+//        String[] candidateNodeArray = candidateNodeText.split("\\s");
+//
+//        for (int i = 0; i < markedNodeArray.length ; i++) {
+//            String marked = markedNodeArray[i];
+//            if(marked.length() == 1 || POSUtility.isArticle(marked)){
+//                continue;
+//            }
+//            for (int j = 0; j < candidateNodeArray.length ; j++) {
+//                String candidate = candidateNodeArray[j];
+//                if(candidate.length() == 1 || POSUtility.isArticle(candidate)){
+//                    continue;
+//                }
+//                if(marked.equals(candidate) || candidate.contains(marked)){
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+
+
+
+
+
+//        if(markedNodeArray.length == 1 && candidateNodeArray.length != 1){
+//            for (int i = 0; i < candidateNodeArray.length ; i++) {
+//                String str = candidateNodeArray[i];
+//                return str.equalsIgnoreCase(markedNodeArray[0]) || str.toLowerCase().contains(markedNodeArray[0].toLowerCase());
+//            }
+//        }
+//        else if(candidateNodeArray.length == 1 && markedNodeArray.length != 1){
+//            for (int i = 0; i < markedNodeArray.length ; i++) {
+//                String str = markedNodeArray[i];
+//                return str.equalsIgnoreCase(candidateNodeArray[0]) || str.toLowerCase().contains(candidateNodeArray[0].toLowerCase());
+//            }
+//        }
+//        else {
+//            for (int i = 0; i < candidateNodeArray.length ; i++) {
+//                for (int j = 0; j < markedNodeArray.length ; j++) {
+//                    String str1 = candidateNodeArray[i];
+//                    String str2 = markedNodeArray[j];
+//                    return str1.equalsIgnoreCase(str2) || str1.toLowerCase().contains(str2.toLowerCase()) || str2.toLowerCase().contains(str1.toLowerCase());
+//                }
+//            }
+//        }
+//        return false;
 	}
 	
 	private static boolean doesNERMatch(Tree markedNode, Tree markedNodeSentence, CandidateNP candidateNode){
@@ -116,5 +179,10 @@ public class FeatureMatcher {
             }
         }
         return false;
+    }
+
+    private static String getHeadNounFromString(String nodeText){
+        String[] textArray = nodeText.split(" ");
+        return textArray[textArray.length - 1];
     }
 }

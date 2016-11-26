@@ -127,6 +127,9 @@ public class TreeHelper {
                     arrayIndex++;
                 }
             }
+            if(leavesToSend.size() == 0){
+                return null;
+            }
             return getCommonParentForLeaves(leavesToSend, coref);
         }
     }
