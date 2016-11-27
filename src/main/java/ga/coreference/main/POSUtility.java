@@ -14,6 +14,8 @@ public class POSUtility {
     private static ArrayList<String> nounSingular;
     private static ArrayList<String> nounPlural;
     private static ArrayList<String> articles;
+    private static ArrayList<String> pronouns;
+
     static{
         phrases = new ArrayList<String>();
         //CLAUSES as Per PENN TREEBANK
@@ -67,6 +69,20 @@ public class POSUtility {
         articles.add("the");
         articles.add("a");
         articles.add("an");
+
+        pronouns = new ArrayList<String>();
+        pronouns.add("i");
+        pronouns.add("me");
+        pronouns.add("we");
+        pronouns.add("you");
+        pronouns.add("he");
+        pronouns.add("she");
+        pronouns.add("it");
+        pronouns.add("him");
+        pronouns.add("her");
+        pronouns.add("they");
+        pronouns.add("them");
+
     }
 
     public static boolean isTerminalTag(String tag){
@@ -112,5 +128,24 @@ public class POSUtility {
 
     public static boolean isArticle(String key){
         return (articles.contains(key.toLowerCase()));
+    }
+
+    public static boolean isPronoun(String key){
+        return pronouns.contains(key.toLowerCase());
+    }
+    public static void main(String args[]) {
+        String Str = new String("Welcome to Tutorials point.com");
+
+        System.out.print("Return Value :" );
+        System.out.println(Str.matches("(.*)"+"Tutorials" + "(.*)"));
+
+        System.out.print("Return Value :" );
+        System.out.println(Str.matches("Tutorials"));
+
+        System.out.print("Return Value :" );
+        System.out.println(Str.matches("Welcome(.*)"));
+
+        System.out.print("Return Value :" );
+        System.out.println(Str.matches("Welcome"));
     }
 }
