@@ -106,7 +106,7 @@ public class FeatureMatcher {
 
 	}
 	
-	private static boolean doesNERMatch(Tree markedNode, Tree markedNodeSentence, CandidateNP candidateNode){
+	public static boolean doesNERMatch(Tree markedNode, Tree markedNodeSentence, CandidateNP candidateNode){
         String markedNodeNERTag = "";
         String candidateNodeNERTag = "";
         List<Sentence> markedNodeSent = TreeHelper.getInstance().getSentenceForTree(markedNodeSentence, true);
@@ -123,7 +123,7 @@ public class FeatureMatcher {
         return false;
 	}
 
-	private static boolean doesNumberMatch(Tree markedNode, Tree sentenceForMarkedNode, CandidateNP candidateNP){
+	public static boolean doesNumberMatch(Tree markedNode, Tree sentenceForMarkedNode, CandidateNP candidateNP){
 	    boolean numberMatch = false;
         boolean isMarkedNodeSingular = false;
         boolean isCandidateNodeSingular = false;

@@ -299,4 +299,17 @@ public class TreeHelper {
     	String tag = NERtags.get(idx);
     	return tag;	
     }
+
+    public ArrayList<Tree> getNpNodesUptilNodeInSentence(Tree node, ArrayList<Tree> npNpdesList, Tree sentence){
+        ArrayList<Tree> listToReturn = new ArrayList<Tree>();
+        int nodeNumber = node.nodeNumber(sentence);
+        for (int i = 0; i < npNpdesList.size(); i++) {
+            Tree n = npNpdesList.get(i);
+            int nNodeNumber = n.nodeNumber(sentence);
+            if(nNodeNumber < nodeNumber){
+                listToReturn.add(n);
+            }
+        }
+        return listToReturn;
+    }
 }

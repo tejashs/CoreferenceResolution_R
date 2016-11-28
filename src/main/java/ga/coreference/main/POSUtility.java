@@ -82,6 +82,7 @@ public class POSUtility {
         pronouns.add("her");
         pronouns.add("they");
         pronouns.add("them");
+        pronouns.add("themselves");
 
     }
 
