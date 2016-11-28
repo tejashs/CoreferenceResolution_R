@@ -6,6 +6,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -38,9 +39,9 @@ public class coreference {
             String output = resolver.parseInputFile(fileName);
             String[] filenameArray = fileName.split("\\.");
             String fullFilePath = filenameArray[0];
-            String[] temp = fullFilePath.split(File.separator);
+            String[] temp = fullFilePath.split("/");
             String filenamePrefix = temp[temp.length - 1];
-            String fileToPrint = directoryForResponseFiles + File.separator + filenamePrefix + "." + "response";
+            String fileToPrint = directoryForResponseFiles + "/" + filenamePrefix + "." + "response";
             PrintWriter out = new PrintWriter(new FileWriter(fileToPrint));
             out.print(output);
             out.flush();
@@ -49,6 +50,8 @@ public class coreference {
 
 
     }
+    
+   
 
     private static void setLoggerOff(){
         List<Logger> loggers = Collections.<Logger>list(LogManager.getCurrentLoggers());

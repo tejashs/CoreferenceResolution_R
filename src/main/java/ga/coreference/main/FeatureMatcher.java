@@ -22,7 +22,7 @@ public class FeatureMatcher {
         doesGenderMatch(null,null,null);
     }
 
-    public static boolean doesFeatureMatch(Tree markedNode, Tree sentenceForMarkedNode, CandidateNP candidateNode, Tree sentenceForCandidateNode){
+    public static boolean doesFeatureMatch(Tree markedNode, Tree sentenceForMarkedNode, CandidateNP candidateNode, Tree sentenceForCandidateNode, boolean stringMatch){
 	    boolean completeFeatureMatch = false;
 		String markedNodeText = TreeHelper.getInstance().getTextValueForTree(markedNode, true);
 		String candidateNodeText = TreeHelper.getInstance().getTextValueForTree(candidateNode.getNounPhrase(), true);
@@ -30,13 +30,18 @@ public class FeatureMatcher {
 			return false;
 		}
 
-        boolean NERMatch = false;
-        boolean stringMatch = false;
-        boolean numberMatch = false;
-		if(doesStringMatch(markedNodeText, candidateNodeText)){
-			stringMatch = true;
-		}
-
+        if(stringMatch){
+			if(doesStringMatch(markedNodeText, candidateNodeText)){
+				return true;
+			}
+			else return false;
+        }
+        else{
+        	if(doesNERMatch(markedNode, sentenceForMarkedNode, candidateNode)){
+        		return true;
+        	}
+        	else return false;
+        }
 
     	//NER match
     	//NERMatch = doesNERMatch(markedNode, sentenceForMarkedNode, candidateNode);
@@ -46,7 +51,7 @@ public class FeatureMatcher {
 
         //Gender match
 
-        return stringMatch;
+       
     }
 	
 	public static boolean doesFeatureMatch(Tree markedNode, CandidateNP candidateNode){

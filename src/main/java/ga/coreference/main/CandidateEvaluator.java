@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -27,37 +28,93 @@ public class CandidateEvaluator {
     private HashMap<CoRefObject, ArrayList<CandidateNP>> coRefObjectToSuccessCandidatesMap;
     private HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalsMap;
     private ArrayList<Tree> parsedSentencesInFile;
-    public CandidateEvaluator(ArrayList<CoRefObject> coRefObjects, HashMap<Tree, CoRefObject> coRefTreeTocoRefObjectMap, HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalsMap, ArrayList<Tree> parsedSentencesInFile) {
+    private HashMap<String, String> corefToIDMap;
+    private boolean flag;
+    StringBuilder builder;
+    private HashSet<String> IDs;
+    public CandidateEvaluator(HashMap<String, String> corefToIDMap, ArrayList<CoRefObject> coRefObjects, HashMap<Tree, CoRefObject> coRefTreeTocoRefObjectMap, HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalsMap, ArrayList<Tree> parsedSentencesInFile) {
         this.coRefObjects = coRefObjects;
         this.coRefTreeTocoRefObjectMap = coRefTreeTocoRefObjectMap;
         this.coRefObjectToSuccessCandidatesMap = new HashMap<CoRefObject, ArrayList<CandidateNP>>();
         this.sentenceToNPTerminalsMap = sentenceToNPTerminalsMap;
         this.parsedSentencesInFile = parsedSentencesInFile;
+        this.corefToIDMap = corefToIDMap;
+        flag = false;
+        builder = new StringBuilder();
+        IDs = new HashSet<String>();
     }
 
 
     public String evaluateCandidateNPsForCoRefs() throws IOException{
         for (CoRefObject coRef: coRefObjects) {
             String markedNodeText = TreeHelper.getInstance().getTextValueForTree(coRef.tree(), true);
-            System.out.println("Marked Node : "+ markedNodeText);
+           // System.out.println("Marked Node : "+ markedNodeText);
             ArrayList<CandidateNP> candidateNPs = coRef.getCandidates();
+            if(corefToIDMap.containsKey(coRef.getValue().toLowerCase())){
+            	String id = corefToIDMap.get(coRef.getValue().toLowerCase());
+            	String idtoMatch = coRef.getID();
+            	if(!id.equals(idtoMatch)){
+            		 //StringBuilder builder = new StringBuilder();
+            		if(!flag){
+	            		builder.append("<TXT>");
+	            	    builder.append("\n"); 
+            		}
+            	    builder.append("<COREF ID=\""+ idtoMatch + "\" REF=\""+ id + "\">"+coRef.getValue()+"</COREF>");
+            	    builder.append("\n");
+            	    flag = true;
+            	    IDs.add(idtoMatch);
+            	     
+            	}
+            }
+            
+            
+            
             for (CandidateNP candidate: candidateNPs) {
-                boolean featureMatched = FeatureMatcher.doesFeatureMatch(coRef.tree(), coRef.getSentenceTree(), candidate, candidate.getSentenceRoot());
+                boolean featureMatched = FeatureMatcher.doesFeatureMatch(coRef.tree(), coRef.getSentenceTree(), candidate, candidate.getSentenceRoot(), true);
                 if(TreeHelper.getInstance().getTextValueForTree(candidate.getNounPhrase(), true).length() == 0){
                     continue;
                 }
                 if(featureMatched){
                     String candidateNodeText = TreeHelper.getInstance().getTextValueForTree(candidate.getNounPhrase(), true);
-                    System.out.println("Candidate : "+ candidateNodeText);
+                   // System.out.println("Candidate : "+ candidateNodeText);
                     addToSuccessCandidates(coRef, candidate);
                 }
             }
-            System.out.println("");
+          //  System.out.println("");
+            
+            if(!coRefObjectToSuccessCandidatesMap.containsKey(coRef)){
+                //check for NER match
+                for (CandidateNP candidate: candidateNPs) {
+                	 boolean featureMatched = FeatureMatcher.doesFeatureMatch(coRef.tree(), coRef.getSentenceTree(), candidate, candidate.getSentenceRoot(), false);
+                	 if(TreeHelper.getInstance().getTextValueForTree(candidate.getNounPhrase(), true).length() == 0){
+                         continue;
+                     }
+                	 if(featureMatched){
+                		 String candidateNodeText = TreeHelper.getInstance().getTextValueForTree(candidate.getNounPhrase(), true);
+                         // System.out.println("Candidate : "+ candidateNodeText);
+                          if(coRefObjectToSuccessCandidatesMap.containsKey(coRef)){
+                              ArrayList<CandidateNP> successCandidates = coRefObjectToSuccessCandidatesMap.get(coRef);
+                              successCandidates.add(candidate);
+                              coRefObjectToSuccessCandidatesMap.put(coRef, successCandidates);
+                          }
+                          else {
+                              ArrayList<CandidateNP> successCandidates = new ArrayList<CandidateNP>();
+                              successCandidates.add(candidate);
+                              coRefObjectToSuccessCandidatesMap.put(coRef, successCandidates);
+                          }
+                          break;
+                	 }
+                }
+                
+              //  System.out.println("");
+            }
         }
 
         evaluatePronounsForCoref();
 
-
+       
+        
+        
        return getOutputToPrint();
        
 
@@ -142,14 +199,20 @@ public class CandidateEvaluator {
     }
     
     public String getOutputToPrint() throws IOException{
-        StringBuilder builder = new StringBuilder();
-        builder.append("<TXT>");
-        builder.append("\n");
+//        StringBuilder builder = new StringBuilder();
+        if(!flag) {
+        	builder.append("<TXT>");
+        	builder.append("\n");
+        }
+       
         int xmlTagIDCounter = 1;
 
         for (CoRefObject coRef:coRefObjectToSuccessCandidatesMap.keySet()) {
             Node coRefXMLNode = coRef.node();
             String ref = null;
+            if(IDs.contains(coRefXMLNode.getAttributes().item(0).getNodeValue())){
+            	continue;
+            }
             ArrayList<CandidateNP> successCandidates = coRefObjectToSuccessCandidatesMap.get(coRef);
             HashMap<CandidateNP, String> candidateNPToXMLTextMap = new HashMap<CandidateNP, String>();
             for(int i = successCandidates.size()-1; i >= 0; i--){
@@ -162,6 +225,7 @@ public class CandidateEvaluator {
                     if(coRefXMLNode.getAttributes().item(0).getNodeValue().equals(xmlNode.getAttributes().item(0).getNodeValue())){
                     	continue;
                     }
+                    
                     ref  = xmlNode.getAttributes().item(0).getNodeValue();
                 }
                 else {

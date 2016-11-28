@@ -31,6 +31,7 @@ public class CoreferenceResolution {
     private ArrayList<CoRefObject> coRefObjects;
     private HashMap<Tree, CoRefObject> coRefTreeToCoRefObjectMap;
     private ArrayList<CoRefObject> failedCoRefs;
+    private HashMap<String, String> corefToIDMap;
 
     public static void main(String[] args) {
 //        String str = "/Users/tejas/Dropbox/MS Academics/Fall 2016/Natural Language Processing/Project/Initial Data set/dev/a9.crf";
@@ -100,7 +101,7 @@ public CoreferenceResolution(){
             coRef.setCandidates(candidateNPs);
         }
 
-        CandidateEvaluator evaluator = new CandidateEvaluator(coRefObjects, coRefTreeToCoRefObjectMap, sentenceToNPTerminalMap, parsedSentencesInFile);
+        CandidateEvaluator evaluator = new CandidateEvaluator(corefToIDMap, coRefObjects, coRefTreeToCoRefObjectMap, sentenceToNPTerminalMap, parsedSentencesInFile);
         return evaluator.evaluateCandidateNPsForCoRefs();
     }
 
@@ -173,6 +174,17 @@ private String getTextFromFile(File file){
             sentenceIndex++;
         }
         NodeList allTags = getAllTagsInFile(file);
+        //populate to a hashmap
+        corefToIDMap = new HashMap<String, String>();
+        for(int i = 0; i < allTags.getLength(); i++){
+        	Node coref = allTags.item(i);
+        	String corefText = coref.getTextContent();
+        	if(!corefToIDMap.containsKey(corefText)){
+        		corefToIDMap.put(corefText, coref.getAttributes().item(0).getNodeValue());
+        	}
+        }
+        
+        
         parsedSentencesInFile = getParsedSentences(file);
         int ballParkIndex = -1;
         int coRefIndex = 0;
