@@ -101,7 +101,7 @@ public CoreferenceResolution(){
             coRef.setCandidates(candidateNPs);
         }
 
-        CandidateEvaluator evaluator = new CandidateEvaluator(corefToIDMap, coRefObjects, coRefTreeToCoRefObjectMap, sentenceToNPTerminalMap, parsedSentencesInFile);
+        CandidateEvaluator evaluator = new CandidateEvaluator(sentencesInFile, corefToIDMap, coRefObjects, coRefTreeToCoRefObjectMap, sentenceToNPTerminalMap, parsedSentencesInFile);
         return evaluator.evaluateCandidateNPsForCoRefs();
     }
 
@@ -178,7 +178,7 @@ private String getTextFromFile(File file){
         corefToIDMap = new HashMap<String, String>();
         for(int i = 0; i < allTags.getLength(); i++){
         	Node coref = allTags.item(i);
-        	String corefText = coref.getTextContent();
+        	String corefText = coref.getTextContent().toLowerCase();
         	if(!corefToIDMap.containsKey(corefText)){
         		corefToIDMap.put(corefText, coref.getAttributes().item(0).getNodeValue());
         	}

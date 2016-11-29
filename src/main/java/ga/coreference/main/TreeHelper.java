@@ -275,8 +275,6 @@ public class TreeHelper {
         }
         String[] NPWords = NPText.split("\\s|\\n");
 
-
-
     	Hashtable<String, Integer> NERTagsForNP = new Hashtable<String, Integer>();
     	
     	for(String NPWord: NPWords){

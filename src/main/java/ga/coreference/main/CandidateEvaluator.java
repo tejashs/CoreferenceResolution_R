@@ -32,7 +32,9 @@ public class CandidateEvaluator {
     private boolean flag;
     StringBuilder builder;
     private HashSet<String> IDs;
-    public CandidateEvaluator(HashMap<String, String> corefToIDMap, ArrayList<CoRefObject> coRefObjects, HashMap<Tree, CoRefObject> coRefTreeTocoRefObjectMap, HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalsMap, ArrayList<Tree> parsedSentencesInFile) {
+    ArrayList<String> sentencesInFile;
+    
+    public CandidateEvaluator(ArrayList<String> sentencesInFile, HashMap<String, String> corefToIDMap, ArrayList<CoRefObject> coRefObjects, HashMap<Tree, CoRefObject> coRefTreeTocoRefObjectMap, HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalsMap, ArrayList<Tree> parsedSentencesInFile) {
         this.coRefObjects = coRefObjects;
         this.coRefTreeTocoRefObjectMap = coRefTreeTocoRefObjectMap;
         this.coRefObjectToSuccessCandidatesMap = new HashMap<CoRefObject, ArrayList<CandidateNP>>();
@@ -42,6 +44,7 @@ public class CandidateEvaluator {
         flag = false;
         builder = new StringBuilder();
         IDs = new HashSet<String>();
+        this.sentencesInFile = sentencesInFile;
     }
 
 
@@ -50,8 +53,9 @@ public class CandidateEvaluator {
             String markedNodeText = TreeHelper.getInstance().getTextValueForTree(coRef.tree(), true);
            // System.out.println("Marked Node : "+ markedNodeText);
             ArrayList<CandidateNP> candidateNPs = coRef.getCandidates();
-            if(corefToIDMap.containsKey(coRef.getValue().toLowerCase())){
-            	String id = corefToIDMap.get(coRef.getValue().toLowerCase());
+            String corefText = coRef.getValue().toLowerCase();
+            if(corefToIDMap.containsKey(corefText)){
+            	String id = corefToIDMap.get(corefText);
             	String idtoMatch = coRef.getID();
             	if(!id.equals(idtoMatch)){
             		 //StringBuilder builder = new StringBuilder();
@@ -67,7 +71,24 @@ public class CandidateEvaluator {
             	}
             }
             
-            
+            //do string match
+//            String corefText = coRef.getValue();
+//            String corefID = coRef.getID();
+//            if(!IDs.contains(corefID)){
+//	            int sentenceID = coRef.getSentenceIndexInFile();
+//	            for(int i = sentenceID; i >= 0; i--){
+//	            	String sentence = this.sentencesInFile.get(i);
+//	            	if(i == sentenceID){
+//	            		sentence = sentence.substring(0, sentence.indexOf("ID=\""+ corefID + "")-1);
+//	            	}
+//	            	if(sentence.contains(corefText)){
+//	            		int startID = -1;
+//	            		int endID = -1;
+//	            		int j = 0;
+//	            		while(j < sentence.indexOf(str) )
+//	            	}
+//	            }
+//            }
             
             for (CandidateNP candidate: candidateNPs) {
                 boolean featureMatched = FeatureMatcher.doesFeatureMatch(coRef.tree(), coRef.getSentenceTree(), candidate, candidate.getSentenceRoot(), true);
