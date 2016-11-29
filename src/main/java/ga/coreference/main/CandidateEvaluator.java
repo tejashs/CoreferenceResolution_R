@@ -52,9 +52,9 @@ public class CandidateEvaluator {
 
     public String evaluateCandidateNPsForCoRefs() throws IOException{
         for (CoRefObject coRef: coRefObjects) {
-//        	if(IDs.contains(coRef.getID())){
-//        		continue;
-//        	}
+
+            boolean atleastOneCandidateFound = false;
+
             String markedNodeText = TreeHelper.getInstance().getTextValueForTree(coRef.tree(), true);
            // System.out.println("Marked Node : "+ markedNodeText);
             ArrayList<CandidateNP> candidateNPs = coRef.getCandidates();
@@ -117,6 +117,8 @@ public class CandidateEvaluator {
                    // System.out.println("Candidate : "+ candidateNodeText);
                     addToSuccessCandidates(coRef, candidate);
                     IDs.add(corefID);
+
+                    atleastOneCandidateFound = true;
                 }
             }
           //  System.out.println("");
@@ -149,7 +151,7 @@ public class CandidateEvaluator {
               //  System.out.println("");
             }
         }
-        
+
         evaluatePronounsForCoref();
 
        
@@ -167,19 +169,20 @@ public class CandidateEvaluator {
                 continue;
             }
             evaluatePronounForSentence(coref, null, false);
-//            int sentenceIndex = coref.getSentenceIndexInFile();
-//            int counter = 0;
-//            while(counter < 2){
-//                sentenceIndex++;
-//                if(sentenceIndex < parsedSentencesInFile.size()){
-//                    Tree sentenceNode = parsedSentencesInFile.get(sentenceIndex);
-//                    evaluatePronounForSentence(coref, sentenceNode, true);
-//                    counter++;
-//                }
-//                else {
-//                    break;
-//                }
-//            }
+
+            int sentenceIndex = coref.getSentenceIndexInFile();
+            int counter = 0;
+            while(counter < 1){
+                sentenceIndex--;
+                if(sentenceIndex >= 0){
+                    Tree sentenceNode = parsedSentencesInFile.get(sentenceIndex);
+                    evaluatePronounForSentence(coref, sentenceNode, true);
+                    counter++;
+                }
+                else {
+                    break;
+                }
+            }
         }
     }
 
@@ -195,7 +198,7 @@ public class CandidateEvaluator {
             npNodesToEvaluate = sentenceToNPTerminalsMap.get(sentence);
         }
         ArrayList<CandidateNP> candidatePronounNPs = new ArrayList<CandidateNP>();
-        if(coref.getValue().equals("it")){
+        if(coref.getValue().equalsIgnoreCase("it")){
             for (Tree npNode: npNodesToEvaluate) {
                 List<Sentence> sentences = TreeHelper.getInstance().getSentenceForTree(sentence, true);
                 String ner = TreeHelper.getInstance().findNERTagForNP(sentences.get(0), npNode);
