@@ -183,7 +183,6 @@ public class CandidateEvaluator {
         if(candidatePronounNPs.size() > 0){
             for (CandidateNP candidate: candidatePronounNPs) {
                 addToSuccessCandidates(coref, candidate);
-                failedCorefs.remove(coref);
             }
         }
     }
