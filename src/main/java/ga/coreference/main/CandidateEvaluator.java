@@ -27,17 +27,20 @@ public class CandidateEvaluator {
     private HashMap<CoRefObject, ArrayList<CandidateNP>> coRefObjectToSuccessCandidatesMap;
     private HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalsMap;
     private ArrayList<Tree> parsedSentencesInFile;
+    private ArrayList<CoRefObject> failedCorefs;
     public CandidateEvaluator(ArrayList<CoRefObject> coRefObjects, HashMap<Tree, CoRefObject> coRefTreeTocoRefObjectMap, HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalsMap, ArrayList<Tree> parsedSentencesInFile) {
         this.coRefObjects = coRefObjects;
         this.coRefTreeTocoRefObjectMap = coRefTreeTocoRefObjectMap;
         this.coRefObjectToSuccessCandidatesMap = new HashMap<CoRefObject, ArrayList<CandidateNP>>();
         this.sentenceToNPTerminalsMap = sentenceToNPTerminalsMap;
         this.parsedSentencesInFile = parsedSentencesInFile;
+        failedCorefs = new ArrayList<CoRefObject>();
     }
 
 
     public String evaluateCandidateNPsForCoRefs() throws IOException{
         for (CoRefObject coRef: coRefObjects) {
+            boolean atleastOneCandidateFound = false;
             String markedNodeText = TreeHelper.getInstance().getTextValueForTree(coRef.tree(), true);
             System.out.println("Marked Node : "+ markedNodeText);
             ArrayList<CandidateNP> candidateNPs = coRef.getCandidates();
@@ -50,13 +53,22 @@ public class CandidateEvaluator {
                     String candidateNodeText = TreeHelper.getInstance().getTextValueForTree(candidate.getNounPhrase(), true);
                     System.out.println("Candidate : "+ candidateNodeText);
                     addToSuccessCandidates(coRef, candidate);
+                    atleastOneCandidateFound = true;
                 }
             }
-            System.out.println("");
+            if(!atleastOneCandidateFound){
+                failedCorefs.add(coRef);
+            }
         }
-
         evaluatePronounsForCoref();
 
+        System.out.println("Failed Coref Size :" + failedCorefs.size());
+        System.out.println("Coref objects:" + coRefObjects.size());
+        System.out.println("Processed Coref Objects :" + coRefObjectToSuccessCandidatesMap.keySet().size());
+        for (CoRefObject coref: failedCorefs) {
+            System.out.println("Failed : " + coref.getValue());
+            System.out.println("Candidates Size : " + coref.getCandidates().size());
+        }
 
        return getOutputToPrint();
        
@@ -69,19 +81,20 @@ public class CandidateEvaluator {
                 continue;
             }
             evaluatePronounForSentence(coref, null, false);
-//            int sentenceIndex = coref.getSentenceIndexInFile();
-//            int counter = 0;
-//            while(counter < 2){
-//                sentenceIndex++;
-//                if(sentenceIndex < parsedSentencesInFile.size()){
-//                    Tree sentenceNode = parsedSentencesInFile.get(sentenceIndex);
-//                    evaluatePronounForSentence(coref, sentenceNode, true);
-//                    counter++;
-//                }
-//                else {
-//                    break;
-//                }
-//            }
+
+            int sentenceIndex = coref.getSentenceIndexInFile();
+            int counter = 0;
+            while(counter < 1){
+                sentenceIndex--;
+                if(sentenceIndex >= 0){
+                    Tree sentenceNode = parsedSentencesInFile.get(sentenceIndex);
+                    evaluatePronounForSentence(coref, sentenceNode, true);
+                    counter++;
+                }
+                else {
+                    break;
+                }
+            }
         }
     }
 
@@ -97,7 +110,7 @@ public class CandidateEvaluator {
             npNodesToEvaluate = sentenceToNPTerminalsMap.get(sentence);
         }
         ArrayList<CandidateNP> candidatePronounNPs = new ArrayList<CandidateNP>();
-        if(coref.getValue().equals("it")){
+        if(coref.getValue().equalsIgnoreCase("it")){
             for (Tree npNode: npNodesToEvaluate) {
                 List<Sentence> sentences = TreeHelper.getInstance().getSentenceForTree(sentence, true);
                 String ner = TreeHelper.getInstance().findNERTagForNP(sentences.get(0), npNode);
@@ -124,6 +137,7 @@ public class CandidateEvaluator {
         if(candidatePronounNPs.size() > 0){
             for (CandidateNP candidate: candidatePronounNPs) {
                 addToSuccessCandidates(coref, candidate);
+                failedCorefs.remove(coref);
             }
         }
     }
@@ -142,6 +156,24 @@ public class CandidateEvaluator {
     }
     
     public String getOutputToPrint() throws IOException{
+        for (CoRefObject coRef:coRefObjectToSuccessCandidatesMap.keySet()) {
+            System.out.println("COREF : " + coRef.getValue());
+            ArrayList<CandidateNP> candidates = coRefObjectToSuccessCandidatesMap.get(coRef);
+            int i = 0;
+            for (CandidateNP np: candidates) {
+                System.out.println("Candidate " + i + " : " + np.getNounPhrase());
+                i++;
+            }
+        }
+
+        if(true){
+            return "";
+        }
+
+
+
+
+
         StringBuilder builder = new StringBuilder();
         builder.append("<TXT>");
         builder.append("\n");

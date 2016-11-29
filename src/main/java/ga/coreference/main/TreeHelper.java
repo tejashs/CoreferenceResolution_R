@@ -16,6 +16,7 @@ import java.util.*;
 public class TreeHelper {
 
     private static TreeHelper INSTANCE = new TreeHelper();
+    private static HashMap<Sentence, List<String>> sentenceToNerTagsMap = new HashMap<Sentence, List<String>>();
 
     private TreeHelper() {
 
@@ -257,9 +258,22 @@ public class TreeHelper {
     }
     
     public String findNERTagForNP(Sentence sentence, Tree NP){
-    	List<String> NERtags = sentence.nerTags();
+        List<String> NERtags;
+        if(!sentenceToNerTagsMap.containsKey(sentence)){
+             NERtags = sentence.nerTags();
+        }
+        else {
+             NERtags = sentenceToNerTagsMap.get(sentence);
+        }
+
     	List<String> words = sentence.words();
     	List<Word> NPwords = NP.yieldWords();
+
+        for (String w: words) {
+
+        }
+
+
         StringBuilder builder = new StringBuilder();
         for (Word w : NPwords) {
             if(w.value().contains("COREF") || w.value().length() == 0){
