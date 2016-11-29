@@ -33,6 +33,7 @@ public class CandidateEvaluator {
     StringBuilder builder;
     private HashSet<String> IDs;
     ArrayList<String> sentencesInFile;
+    private int xmlTagIDCounter;
     
     public CandidateEvaluator(ArrayList<String> sentencesInFile, HashMap<String, String> corefToIDMap, ArrayList<CoRefObject> coRefObjects, HashMap<Tree, CoRefObject> coRefTreeTocoRefObjectMap, HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalsMap, ArrayList<Tree> parsedSentencesInFile) {
         this.coRefObjects = coRefObjects;
@@ -45,11 +46,15 @@ public class CandidateEvaluator {
         builder = new StringBuilder();
         IDs = new HashSet<String>();
         this.sentencesInFile = sentencesInFile;
+        xmlTagIDCounter = 1;
     }
 
 
     public String evaluateCandidateNPsForCoRefs() throws IOException{
         for (CoRefObject coRef: coRefObjects) {
+//        	if(IDs.contains(coRef.getID())){
+//        		continue;
+//        	}
             String markedNodeText = TreeHelper.getInstance().getTextValueForTree(coRef.tree(), true);
            // System.out.println("Marked Node : "+ markedNodeText);
             ArrayList<CandidateNP> candidateNPs = coRef.getCandidates();
@@ -72,24 +77,36 @@ public class CandidateEvaluator {
             }
             
             //do string match
-//            String corefText = coRef.getValue();
-//            String corefID = coRef.getID();
-//            if(!IDs.contains(corefID)){
-//	            int sentenceID = coRef.getSentenceIndexInFile();
-//	            for(int i = sentenceID; i >= 0; i--){
-//	            	String sentence = this.sentencesInFile.get(i);
-//	            	if(i == sentenceID){
-//	            		sentence = sentence.substring(0, sentence.indexOf("ID=\""+ corefID + "")-1);
-//	            	}
-//	            	if(sentence.contains(corefText)){
-//	            		int startID = -1;
-//	            		int endID = -1;
-//	            		int j = 0;
-//	            		while(j < sentence.indexOf(str) )
-//	            	}
-//	            }
-//            }
+            //String corefText = coRef.getValue();
+            String corefID = coRef.getID();
+            if(IDs.contains(corefID)) continue;
+	            int sentenceID = coRef.getSentenceIndexInFile();
+	            if(sentenceID > this.sentencesInFile.size()-1) continue;
+	            for(int i = sentenceID; i >= 0; i--){
+	            	
+	            	String sentence = this.sentencesInFile.get(i);
+	            	if(i == sentenceID){
+	            		if(sentence.indexOf(corefID) > 0)
+	            			sentence = sentence.substring(0, sentence.indexOf(corefID));
+	            	}
+	            	String corefHeadNoun = FeatureMatcher.getHeadNounFromString(corefText);
+	            	if(sentence.contains(corefHeadNoun)){
+	            		if(!flag){
+		            		builder.append("<TXT>");
+		            	    builder.append("\n"); 
+	            		}
+	            		builder.append("<COREF ID=\""+ "GA"+ xmlTagIDCounter + "\">"+corefHeadNoun+"</COREF>");
+	            		builder.append("\n");
+	            		builder.append("<COREF ID=\""+ corefID + "\" REF=\""+ "GA"+ xmlTagIDCounter + "\">"+coRef.getValue()+"</COREF>");
+	             	    builder.append("\n");
+	             	    xmlTagIDCounter++;
+	             	    flag = true;
+	             	    IDs.add(corefID);
+	             	    break;
+	            	}
+	            }
             
+	        if(IDs.contains(corefID)) continue;
             for (CandidateNP candidate: candidateNPs) {
                 boolean featureMatched = FeatureMatcher.doesFeatureMatch(coRef.tree(), coRef.getSentenceTree(), candidate, candidate.getSentenceRoot(), true);
                 if(TreeHelper.getInstance().getTextValueForTree(candidate.getNounPhrase(), true).length() == 0){
@@ -99,10 +116,11 @@ public class CandidateEvaluator {
                     String candidateNodeText = TreeHelper.getInstance().getTextValueForTree(candidate.getNounPhrase(), true);
                    // System.out.println("Candidate : "+ candidateNodeText);
                     addToSuccessCandidates(coRef, candidate);
+                    IDs.add(corefID);
                 }
             }
           //  System.out.println("");
-            
+            if(IDs.contains(corefID)) continue;
             if(!coRefObjectToSuccessCandidatesMap.containsKey(coRef)){
                 //check for NER match
                 for (CandidateNP candidate: candidateNPs) {
@@ -123,6 +141,7 @@ public class CandidateEvaluator {
                               successCandidates.add(candidate);
                               coRefObjectToSuccessCandidatesMap.put(coRef, successCandidates);
                           }
+                          IDs.add(corefID);
                           break;
                 	 }
                 }
@@ -130,7 +149,7 @@ public class CandidateEvaluator {
               //  System.out.println("");
             }
         }
-
+        
         evaluatePronounsForCoref();
 
        
@@ -143,6 +162,7 @@ public class CandidateEvaluator {
 
     private void evaluatePronounsForCoref(){
         for (CoRefObject coref: coRefObjects) {
+        	if(IDs.contains(coref.getID())) continue;
             if(!POSUtility.isPronoun(coref.getValue())){
                 continue;
             }
@@ -226,14 +246,15 @@ public class CandidateEvaluator {
         	builder.append("\n");
         }
        
-        int xmlTagIDCounter = 1;
+       // int xmlTagIDCounter = 1;
 
         for (CoRefObject coRef:coRefObjectToSuccessCandidatesMap.keySet()) {
+        	
             Node coRefXMLNode = coRef.node();
             String ref = null;
-            if(IDs.contains(coRefXMLNode.getAttributes().item(0).getNodeValue())){
-            	continue;
-            }
+//            if(IDs.contains(coRefXMLNode.getAttributes().item(0).getNodeValue())){
+//            	continue;
+//            }
             ArrayList<CandidateNP> successCandidates = coRefObjectToSuccessCandidatesMap.get(coRef);
             HashMap<CandidateNP, String> candidateNPToXMLTextMap = new HashMap<CandidateNP, String>();
             for(int i = successCandidates.size()-1; i >= 0; i--){
@@ -262,9 +283,11 @@ public class CandidateEvaluator {
             String x = constructXMLNode(coRefXMLNode.getAttributes().item(0).getNodeValue(), ref, coRefXMLNode.getTextContent());
             builder.append(x);
             builder.append("\n");
+            //IDs.add(coRef.getID());
         }
         builder.append("</TXT>");
         builder.append("\n");
+       
         return builder.toString();
     }
 

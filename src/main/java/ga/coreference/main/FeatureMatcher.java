@@ -160,7 +160,7 @@ public class FeatureMatcher {
         return false;
     }
 
-    private static String getHeadNounFromString(String nodeText){
+    public static String getHeadNounFromString(String nodeText){
         String[] textArray = nodeText.split(" ");
         return textArray[textArray.length - 1];
     }
